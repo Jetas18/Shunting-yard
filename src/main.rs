@@ -40,7 +40,7 @@ fn check_precedence(op_stack: &mut Vec<Ops>, operator: Ops, final_stack: &mut St
         op_stack.push(operator);
         return;
     }
-    while op_stack.last().unwrap().value() > operator.value() {
+    while op_stack.last().unwrap().value() < operator.value() {
         if op_stack.len() <= 1 {
             break;
         }
@@ -88,7 +88,7 @@ fn main() {
         panic!("An equation was not provided");
     }
 
-    let main_eq: String = argv[1].trim().to_owned().replace(" ", "");
+    let main_eq: String = argv[1].trim().replace(' ', "").into();
     let mut i = 0;
 
     let mut final_stack: String = String::new();
