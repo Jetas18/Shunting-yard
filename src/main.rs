@@ -9,6 +9,8 @@ enum Ops {
     Divide,
     LeftParen,
     RightParen,
+    Mod,
+    Exp,
 }
 
 impl Ops {
@@ -20,6 +22,8 @@ impl Ops {
             Ops::Add => 1,
             Ops::Multiply => 2,
             Ops::Divide => 2,
+            Ops::Mod => 2,
+            Ops::Exp => 3,
         }
     }
 
@@ -31,18 +35,28 @@ impl Ops {
             Ops::Multiply => '*',
             Ops::LeftParen => '(',
             Ops::RightParen => ')',
+            Ops::Mod => '%',
+            Ops::Exp => '^',
         }
     }
 }
 
+macro_rules! push_op_if_non {
+    ($a:expr, $b:expr) => {
+        if $a.len() <= 1 {
+            $a.push($b);
+            return;
+        }
+    };
+}
+
 fn check_precedence(op_stack: &mut Vec<Ops>, operator: Ops, final_stack: &mut String) {
-    if op_stack.len() <= 1 {
-        op_stack.push(operator);
-        return;
-    }
-    while op_stack.last().unwrap().value() < operator.value() {
+    push_op_if_non!(op_stack, operator);
+
+    while op_stack.last().unwrap().value() > operator.value() {
         if op_stack.len() <= 1 {
-            break;
+            op_stack.push(operator);
+            return;
         }
         final_stack.push(op_stack.pop().unwrap().into_char());
     }
@@ -50,8 +64,8 @@ fn check_precedence(op_stack: &mut Vec<Ops>, operator: Ops, final_stack: &mut St
     op_stack.push(operator);
 }
 
-fn eval(eq: String) -> i32 {
-    let mut int_stack: Vec<i32> = vec![];
+fn eval(eq: String) -> u32 {
+    let mut int_stack: Vec<u32> = vec![];
 
     let mut buffer: char;
 
@@ -72,6 +86,8 @@ fn eval(eq: String) -> i32 {
                 '-' => int_stack.push(num1 - num2),
                 '+' => int_stack.push(num1 + num2),
                 '/' => int_stack.push(num1 / num2),
+                '^' => int_stack.push(num1.pow(num2)),
+                '%' => int_stack.push(num1 % num2),
                 _ => {
                     continue;
                 }
@@ -116,7 +132,7 @@ fn main() {
         i += 1;
     }
 
-    for iter in operator_stack.into_iter() {
+    for iter in operator_stack.iter().rev() {
         final_stack.push(iter.into_char())
     }
 
